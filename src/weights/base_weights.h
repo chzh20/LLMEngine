@@ -8,9 +8,8 @@ enum class WeightType
     FP32_W = 0,
     FP16_W = 1,
     INT8_W = 2,
-    INT4_W = 3,
-    BF16_W = 4,
-    UNDEFINED_W = 5,
+    BF16_W = 3,
+    UNDEFINED_W = 4,
 };
 
 template<typename T>
@@ -24,17 +23,9 @@ inline WeightType getWeightType()
     {
         return WeightType::FP16_W;
     }
-    else if constexpr (std::is_same_v<T, __half> || std::is_same_v<T, const __half>)
-    {
-        return WeightType::FP16_W;
-    }
-    else if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T const int8_t>)
+    else if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T, const int8_t>)
     {
         return WeightType::INT8_W;
-    }
-    else if constexpr (std::is_same_v<T, int4_t> || std::is_same_v<T,const int4_t>)
-    {
-        return WeightType::INT4_W;
     }
     else if constexpr (std::is_same_v<T, __nv_bfloat16>)
     {
