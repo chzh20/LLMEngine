@@ -3,7 +3,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#define CUDA_CHECK (call) { \
+#define CUDA_CHECK(call) { \
     cudaError_t err = call; \
     if (err != cudaSuccess) { \
         std::cerr << "CUDA error in " << __FILE__ << " at line " << __LINE__ << ": " \

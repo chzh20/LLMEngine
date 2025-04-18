@@ -75,8 +75,8 @@ __global__ void embeddingFunctor(const int *input_ids, T *output, const T *embed
 }
 
 template <typename T>
-void launchInputEmbeddingKernel(Tensor<int> *input_ids,             // int [token_num]
-                                Tensor<T> *output,                  // FP32 [token_num, hidden_size] = [token_num, 4096]
+void launchInputEmbedding(Tensor<int> *input_ids,             // int [max_context_token_num]
+                                Tensor<T> *output,                  // FP32 [max_context_token_num, hidden_size] = [token_num, 4096]
                                 EmbeddingWeight<T> *embedding_table // FP32 [vocab_size, hidden_size]
 )
 {
@@ -92,7 +92,7 @@ void launchInputEmbeddingKernel(Tensor<int> *input_ids,             // int [toke
     CUDA_CHECK(cudaGetLastError());
 }
 
-template void launchInputEmbeddingKernel(Tensor<int> *input_ids, Tensor<float> *output,
+template void launchInputEmbedding(Tensor<int> *input_ids, Tensor<float> *output,
                                          EmbeddingWeight<float> *embedding_table);
-template void launchInputEmbeddingKernel(Tensor<int> *input_ids, Tensor<half> *output,
+template void launchInputEmbedding(Tensor<int> *input_ids, Tensor<half> *output,
                                          EmbeddingWeight<half> *embedding_table);

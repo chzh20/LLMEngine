@@ -5,10 +5,9 @@
 #include<string>
 #include<unordered_map>
 #include<memory>
+
 #include "src/utils/macro.h"
 #include "src/utils/string_utils.h"
-#include "cuda_fp16.h"
-
 enum class Device
 {
     CPU = 0,
@@ -21,10 +20,11 @@ enum  class DataType
     FP32 = 0,
     FP16 = 1,
     INT8 = 2,
-    INT32 = 3,
+    INT4 = 3,
     BF16 = 4,
-    BOOL = 5,
-    BYTES = 6,
+    INT32 = 5,
+    Bool = 6,
+    BYTES = 7,
     UNDEFINED_DTYPE = 16,
 };
 
@@ -39,26 +39,30 @@ DataType getTensorType()
     {
         return DataType::FP16;
     }
-    else if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T, const int8_t>)
-    {
-        return DataType::INT8;
-    }
+    // else if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T, const int8_t>)
+    // {
+    //     return DataType::INT8;
+    // }
+    // else if constexpr (std::is_same_v<T, int4_t> || std::is_same_v<T, const int4_t>)
+    // {
+    //     return DataType::INT4;
+    // }
     else if constexpr(std::is_same_v<T,int> || std::is_same_v<T,const int>)
     {
         return DataType::INT32;
     }
     else if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, const bool>)
     {
-        return DataType::BOOL;
+        return DataType::Bool;
     }
     else if constexpr (std::is_same_v<T, char> || std::is_same_v<T, const char>)
     {
         return DataType::BYTES;
     }
-    else if constexpr (std::is_same_v<T, __nv_bfloat16>)
-    {
-        return DataType::BF16;
-    }
+    // else if constexpr (std::is_same_v<T, __nv_bfloat16>)
+    // {
+    //     return DataType::BF16;
+    // }
     else
     {
         return DataType::UNDEFINED_DTYPE;
@@ -96,9 +100,10 @@ struct TensorBase
             {DataType::FP32, "FP32"},
             {DataType::FP16, "FP16"},
             {DataType::INT8, "INT8"},
+            {DataType::INT4, "INT4"},
             {DataType::BF16, "BF16"},
             {DataType::INT32, "INT32"},
-            {DataType::BOOL, "Bool"},
+            {DataType::Bool, "Bool"},
             {DataType::BYTES, "BYTES"},
             {DataType::UNDEFINED_DTYPE, "UNDEFINED_DTYPE"}
         };
@@ -122,6 +127,7 @@ public:
        if(data == nullptr || shape.size()) return 0;
         return std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>());
     }
+
     T getVal(int index = 0) const
     {
         LLM_ASSERT(data != nullptr, "Tensor data is null");
@@ -147,9 +153,10 @@ public:
             case DataType::FP32: return "FP32";
             case DataType::FP16: return "FP16";
             case DataType::INT8: return "INT8";
+            case DataType::INT4: return "INT4";
             case DataType::BF16: return "BF16";
             case DataType::INT32: return "INT32";
-            case DataType::BOOL: return "BOOL";
+            case DataType::Bool: return "Bool";
             case DataType::BYTES: return "BYTES";
             default: return "UNDEFINED_DTYPE";
         }
@@ -186,42 +193,8 @@ struct TensorMap
     inline void insert(std::pair<std::string, TensorPtr> pair) {
         tensors[pair.first] = pair.second;
     }
-
     bool isValid(TensorBase* tensor) const {
         return tensor != nullptr && tensor->size()>0;
-    }
-    inline TensorPtr at(const std::string& key)
-    {
-        auto it = tensors.find(key);
-        if (it != tensors.end()) {
-            return it->second;
-        }
-        return nullptr;
-    }
-    bool isExist(const std::string& key) const
-    {
-        return tensors.find(key) != tensors.end();
-    }
-    inline TensorPtr operator[](const std::string& key)
-    {
-        LLM_ASSERT(isExist(key), "Tensor not found");
-        return tensors[key];
-    }
-
-    std::string toString() const
-    {
-        std::stringstream ss;
-        ss << "{ ";
-        for(int i = 0; i < tensors.size(); ++i)
-        {
-            auto it = std::next(tensors.begin(), i);
-            ss << it->first << ": " << it->second->toString();
-            if (i != tensors.size() - 1) {
-                ss << ", ";
-            }
-        }
-        ss << "}";
-        return ss.str();
     }
 
 };

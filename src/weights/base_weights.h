@@ -27,10 +27,10 @@ inline WeightType getWeightType()
     {
         return WeightType::INT8_W;
     }
-    else if constexpr (std::is_same_v<T, __nv_bfloat16>)
-    {
-        return WeightType::BF16_W;
-    }
+    // else if constexpr (std::is_same_v<T, __nv_bfloat16>)
+    // {
+    //     return WeightType::BF16_W;
+    // }
     else
     {
         return WeightType::UNDEFINED_W;

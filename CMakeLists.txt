@@ -1,44 +1,44 @@
 cmake_minimum_required(VERSION 3.22)
 project(LLMENGINE LANGUAGES CXX CUDA)
-set(CUDA_PATH ${CUDA_TOOLKIT_ROOT_DIR})
-list(APPEND CMAKE_MODULE_PATH ${CUDA_PATH}/lib64)
-find_package(CUDA REQUIRED)
-set(CMAKE_CUDA_STANDARD 17)
+
+# Specify standards
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler --Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-set(CMAKE_CUDA_FLAGS,"${CMAKE_CUDA_FLAGS} \
--gencode=arch=compute_70,code=\\\"sm_70,compute_70\\\"\
--gencode=arch=compute_80,code=\\\"sm_80,compute_80\\\"\
--gencode=arch=compute_86,code=\\\"sm_86,compute_86\\\"\
-")
+# CUDA toolkit
+find_package(CUDAToolkit REQUIRED)
 
-set(CMAKE_CUDA_ARCHITECTURES 70 75 80 86)
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -Wall")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall")
-set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -O0 -Wall")
-
-message(STATUS "CMAKE_CUDA_FLAGS_DEBUG: ${CMAKE_CUDA_FLAGS_DEBUG}")
-message(STATUS "CMAKE_CUDA_FLAGS: ${CMAKE_CUDA_FLAGS}")
-message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
-
-set(COMMON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}
-    $(CUDA_PATH)/include
-)
-set(COMMON_LIB_DIRS
-    ${CUDA_PATH}/lib64
-)
-include_directories(${COMMON_INCLUDE_DIRS})
-link_directories(${COMMON_LIB_DIRS})
+# Output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# Common flags
+set(CMAKE_CUDA_ARCHITECTURES 86)
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-Wall --generate-code=arch=compute_86,code=[compute_86,sm_86]")
+
+# Debug flags
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -O0 -G -Xcompiler=-Wall")
+
+# Include and library directories
+include_directories(
+    ${PROJECT_SOURCE_DIR}
+    ${CUDAToolkit_INCLUDE_DIRS}
+)
+
+link_directories(${CUDAToolkit_LIBRARY_DIR})
+
+# Collect source files
+file(GLOB_RECURSE LLM_CXX_SOURCES src/*.cpp src/*.cc)
+file(GLOB_RECURSE LLM_CUDA_SOURCES src/*.cu)
+
+# Library definition
+add_library(llmengine OBJECT ${LLM_CXX_SOURCES} ${LLM_CUDA_SOURCES})
+
+# Subdirectories
 add_subdirectory(src)
-add_subdirectory(test)
-
-
-
-
+add_subdirectory(tests)
