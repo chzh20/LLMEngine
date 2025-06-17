@@ -75,7 +75,7 @@ __global__ void embeddingFunctor(const int *input_ids, T *output, const T *embed
 }
 
 template <typename T>
-void launchInputEmbedding(Tensor<int> *input_ids,             // int [max_context_token_num]
+void s(Tensor<int> *input_ids,             // int [max_context_token_num]
                                 Tensor<T> *output,                  // FP32 [max_context_token_num, hidden_size] = [token_num, 4096]
                                 EmbeddingWeight<T> *embedding_table // FP32 [vocab_size, hidden_size]
 )
